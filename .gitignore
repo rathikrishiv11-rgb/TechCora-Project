@@ -1,0 +1,31 @@
+# Dependencies and build output
+/node_modules/
+/.next/
+/out/
+/coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+
+# Confidential source data and generated databases
+/data/
+/dataset/
+/datasets/
+/private/
+*.zip
+*.jsonl
+*.sqlite
+*.sqlite3
+*.db
+cora-erp-masked*
+
+# Logs and editor files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
