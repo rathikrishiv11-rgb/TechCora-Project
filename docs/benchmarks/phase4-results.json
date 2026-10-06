@@ -1,0 +1,128 @@
+{
+  "generatedAt": "2026-10-06T18:00:09.923Z",
+  "method": {
+    "engine": "PGlite/PostgreSQL WASM",
+    "warmups": 3,
+    "measuredIterations": 20,
+    "percentile": "nearest-rank",
+    "isolated": true
+  },
+  "source": {
+    "rawBytes": 11696988,
+    "gzipBytes": 1857828,
+    "dateRange": {
+      "min_date": "2025-04-10",
+      "max_date": "2026-10-05",
+      "active_months": 18
+    },
+    "counts": {
+      "materials": 1346,
+      "stockAdjustments": 22,
+      "stockBatches": 2656,
+      "stockMovements": 7761,
+      "storageLocations": 3,
+      "purchaseOrders": 1053,
+      "purchaseOrderLines": 3050,
+      "purchaseReceipts": 1068,
+      "purchaseReceiptLines": 2680,
+      "vendors": 59,
+      "customers": 203,
+      "invoices": 2869,
+      "invoiceLines": 5211,
+      "directDeliveries": 2,
+      "units": 20
+    }
+  },
+  "legacyBrowserModel": {
+    "oneX": {
+      "rawBytes": 11696988,
+      "parseMs": 47.19,
+      "walkAndDeriveMs": 19.39,
+      "longestTaskMs": 66.58,
+      "visitedNodes": 454324
+    },
+    "tenX": {
+      "rawBytes": 116969891,
+      "parseMs": 484.3012,
+      "walkAndDeriveMs": 203.40740000000005,
+      "longestTaskMs": 687.7086,
+      "visitedNodes": 4543241
+    }
+  },
+  "boundedArchitecture": {
+    "oneX": {
+      "invoicePage": {
+        "medianMs": 0.66,
+        "p95Ms": 0.75,
+        "responseBytes": 5413,
+        "rowCount": 25,
+        "roundTrips": 1
+      },
+      "invoiceSearch": {
+        "medianMs": 3.01,
+        "p95Ms": 3.4,
+        "responseBytes": 4917,
+        "rowCount": 25,
+        "roundTrips": 1
+      },
+      "materialPicker": {
+        "medianMs": 1.88,
+        "p95Ms": 2.19,
+        "responseBytes": 2415,
+        "rowCount": 20,
+        "roundTrips": 1
+      },
+      "movementPage": {
+        "medianMs": 0.77,
+        "p95Ms": 1.28,
+        "responseBytes": 5929,
+        "rowCount": 25,
+        "roundTrips": 1
+      },
+      "dashboardAggregate": {
+        "medianMs": 0.62,
+        "p95Ms": 0.9,
+        "responseBytes": 48,
+        "rowCount": 1,
+        "roundTrips": 1
+      }
+    },
+    "tenX": {
+      "invoicePage": {
+        "medianMs": 0.72,
+        "p95Ms": 0.85,
+        "responseBytes": 5502,
+        "rowCount": 25,
+        "roundTrips": 1
+      },
+      "invoiceSearch": {
+        "medianMs": 22.06,
+        "p95Ms": 24.31,
+        "responseBytes": 5021,
+        "rowCount": 25,
+        "roundTrips": 1
+      },
+      "materialPicker": {
+        "medianMs": 9.57,
+        "p95Ms": 10.68,
+        "responseBytes": 2537,
+        "rowCount": 20,
+        "roundTrips": 1
+      },
+      "movementPage": {
+        "medianMs": 0.61,
+        "p95Ms": 0.75,
+        "responseBytes": 6027,
+        "rowCount": 25,
+        "roundTrips": 1
+      },
+      "dashboardAggregate": {
+        "medianMs": 0.28,
+        "p95Ms": 0.74,
+        "responseBytes": 50,
+        "rowCount": 1,
+        "roundTrips": 1
+      }
+    }
+  }
+}

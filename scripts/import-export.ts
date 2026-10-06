@@ -63,6 +63,13 @@ if (writeToDatabase) {
         where material_id is not null
         group by material_id, coalesce(location_id, 'UNSPECIFIED')
       `);
+      await tx.delete(schema.dashboardDailySummary);
+      await tx.execute(drizzleSql`
+        insert into dashboard_daily_summary (day, invoice_count, revenue, cost_of_goods_sold, gross_profit, updated_at)
+        select invoice_date, count(*)::integer, sum(total), 0, sum(total), now()
+        from invoices
+        group by invoice_date
+      `);
     });
     await db.update(schema.importRuns).set({ status: "completed", completedAt: new Date(), importedCounts: report.transformedCounts }).where(eq(schema.importRuns.id, importRunId));
   } catch (error) {

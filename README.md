@@ -4,7 +4,7 @@ StockERP is a performance-focused ERP prototype for batch-based inventory. It is
 
 ## Project status
 
-Phases 1, 2, and 3 are complete:
+The implementation and evidence phases are complete:
 
 - Next.js and TypeScript application shell
 - PostgreSQL access through Drizzle ORM
@@ -23,6 +23,9 @@ Phases 1, 2, and 3 are complete:
 - Stock-aware, debounced material picker with location availability
 - Atomic FIFO invoice allocation with idempotent retries and oversell rejection
 - Atomic goods-receipt endpoint supporting 60 lines in one transaction
+- Reproducible 1×/10× benchmark and twelve-month growth projection
+- Root-cause diagnosis separating browser freeze from network/database latency
+- Deployment runbook and production security headers
 
 ## Requirements
 
@@ -60,6 +63,7 @@ npm run data:analyze -- C:\absolute\path\cora-erp-masked.json
 npm run data:import -- C:\absolute\path\cora-erp-masked.json
 npm run data:reconcile -- C:\absolute\path\cora-erp-masked.json
 npm run data:verify-db -- C:\absolute\path\cora-erp-masked.json
+npm run benchmark -- C:\absolute\path\cora-erp-masked.json --output=docs/benchmarks/phase4-results.json
 ```
 
 `data:import` is a dry run unless `--write` is explicitly provided. To write after migrations have run:
@@ -87,9 +91,9 @@ Run all checks with `npm run check`.
 
 The current npm audit warnings are confined to development-only linting and migration CLI dependency trees. `npm audit --omit=dev` reports the deployable dependency set separately; do not apply npm's suggested forced downgrade because it would replace the current Next.js and Drizzle tooling with incompatible older majors.
 
-## Planned phases
+## Delivery phases
 
 1. Complete — foundation and safe local environment
 2. Complete — export analysis, relational model, import, and reconciliation
 3. Complete — invoice list, stock-aware picker, atomic invoice/receipt writes, aggregate dashboard, movement report, and live concurrency proof
-4. Next — 1×/10× measurements, diagnosis, and deployment
+4. Complete except platform handoff — 1×/10× measurements, diagnosis, deployment configuration, and production checks. Creating the hosted project requires access to the owner’s deployment account.

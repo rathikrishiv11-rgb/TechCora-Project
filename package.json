@@ -22,6 +22,8 @@
     "data:import": "node --experimental-strip-types scripts/import-export.ts",
     "data:reconcile": "node --experimental-strip-types scripts/reconcile.ts",
     "data:verify-db": "node --experimental-strip-types scripts/verify-database.ts",
+    "data:rebuild-summaries": "node --experimental-strip-types scripts/rebuild-summaries.ts",
+    "benchmark": "node --experimental-strip-types scripts/benchmark.ts",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
