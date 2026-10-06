@@ -93,7 +93,7 @@ const queryDefinitions = [
   },
   {
     name: "dashboardAggregate",
-    sql: `select sum(invoice_count)::integer invoice_count,coalesce(sum(revenue),0) revenue from dashboard_daily_summary`,
+    sql: `select count(*)::integer invoice_count,coalesce(sum(total),0) revenue from invoices`,
   },
 ] as const;
 

@@ -107,8 +107,8 @@ export async function listLocations() {
 export async function getDashboard() {
   const [totals, daily, lowStock, recent] = await Promise.all([
     sql`
-      select (select coalesce(sum(invoice_count), 0) from dashboard_daily_summary)::integer as "invoiceCount",
-             (select coalesce(sum(revenue), 0) from dashboard_daily_summary) as revenue,
+      select (select count(*) from invoices)::integer as "invoiceCount",
+             (select coalesce(sum(total), 0) from invoices) as revenue,
              (select count(*) from materials where is_active)::integer as "materialCount",
              (select coalesce(sum(available_quantity), 0) from material_stock_summary) as "stockUnits"
     `,
