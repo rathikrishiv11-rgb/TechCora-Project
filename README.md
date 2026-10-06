@@ -2,9 +2,9 @@
 
 StockERP is a performance-focused ERP prototype for batch-based inventory. It is being built from the masked production export supplied for the TechCora internship exercise.
 
-## Phase 1 status
+## Project status
 
-The foundation is complete:
+Phases 1 and 2 are complete:
 
 - Next.js and TypeScript application shell
 - PostgreSQL access through Drizzle ORM
@@ -13,6 +13,11 @@ The foundation is complete:
 - Health endpoint at `/api/health`
 - Lint, type-check, test, and production-build scripts
 - Git exclusions for secrets and the confidential dataset
+- Full masked-export profiler and transformation pipeline
+- Normalized relational ERP schema and indexes
+- Explicit anomaly ledger for broken or ambiguous source relationships
+- Count, invoice-total, and stock-quantity reconciliation
+- Transactional PostgreSQL importer (dry-run unless `--write` is supplied)
 
 ## Requirements
 
@@ -41,6 +46,29 @@ Do not copy the export into a tracked directory and do not commit it. Set `ERP_E
 
 The repository ignores common data directories, ZIP archives, JSONL files, local databases, and files beginning with `cora-erp-masked`.
 
+## Analyze and import the export
+
+Extract the supplied ZIP outside Git, then run:
+
+```powershell
+npm run data:analyze -- C:\absolute\path\cora-erp-masked.json
+npm run data:import -- C:\absolute\path\cora-erp-masked.json
+npm run data:reconcile -- C:\absolute\path\cora-erp-masked.json
+npm run data:verify-db -- C:\absolute\path\cora-erp-masked.json
+```
+
+`data:import` is a dry run unless `--write` is explicitly provided. To write after migrations have run:
+
+```powershell
+$env:DATABASE_URL = "postgresql://..."
+npm run db:migrate
+npm run data:import -- C:\absolute\path\cora-erp-masked.json --write
+```
+
+Generated reports go under the ignored `data/reports/` directory. Design decisions and reproducible findings are committed in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/DATA_PROFILE.md`](docs/DATA_PROFILE.md).
+
+`data:verify-db` creates an isolated embedded PostgreSQL instance, applies the real migrations, loads the entire export, and compares database row counts. It does not replace the production Neon deployment, but it catches real constraints and SQL incompatibilities without needing cloud credentials.
+
 ## Quality commands
 
 ```powershell
@@ -56,7 +84,7 @@ The current npm audit warnings are confined to development-only linting and migr
 
 ## Planned phases
 
-1. Foundation and safe local environment
-2. Export analysis, relational model, import, and reconciliation
-3. Invoice list, material picker, invoice save, and aggregate view
+1. Complete — foundation and safe local environment
+2. Complete — export analysis, relational model, import, and reconciliation
+3. Next — invoice list, material picker, invoice save, and aggregate view
 4. Concurrency demo, 10× dataset, measurements, documentation, and deployment

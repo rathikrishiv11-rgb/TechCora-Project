@@ -17,6 +17,10 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
+    "data:analyze": "node --experimental-strip-types scripts/analyze-export.ts",
+    "data:import": "node --experimental-strip-types scripts/import-export.ts",
+    "data:reconcile": "node --experimental-strip-types scripts/reconcile.ts",
+    "data:verify-db": "node --experimental-strip-types scripts/verify-database.ts",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {
@@ -29,6 +33,7 @@
     "zod": "4.6.5"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@types/node": "26.6.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
