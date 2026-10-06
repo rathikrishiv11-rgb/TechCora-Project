@@ -4,7 +4,7 @@ StockERP is a performance-focused ERP prototype for batch-based inventory. It is
 
 ## Project status
 
-Phases 1 and 2 are complete:
+Phases 1, 2, and 3 are complete:
 
 - Next.js and TypeScript application shell
 - PostgreSQL access through Drizzle ORM
@@ -18,6 +18,11 @@ Phases 1 and 2 are complete:
 - Explicit anomaly ledger for broken or ambiguous source relationships
 - Count, invoice-total, and stock-quantity reconciliation
 - Transactional PostgreSQL importer (dry-run unless `--write` is supplied)
+- Full masked dataset loaded into Neon and reconciled
+- Dashboard, paginated/sortable/searchable invoice list, and movement report
+- Stock-aware, debounced material picker with location availability
+- Atomic FIFO invoice allocation with idempotent retries and oversell rejection
+- Atomic goods-receipt endpoint supporting 60 lines in one transaction
 
 ## Requirements
 
@@ -36,7 +41,7 @@ npm run db:migrate
 npm run dev
 ```
 
-Open `http://localhost:3000` and check `http://localhost:3000/api/health`.
+Open `http://localhost:3000`. The main workflows are `/`, `/invoices`, `/invoices/new`, and `/movements`; system health is at `/api/health`.
 
 If Docker is unavailable, set `DATABASE_URL` in `.env.local` to any PostgreSQL or Neon development database.
 
@@ -61,7 +66,7 @@ npm run data:verify-db -- C:\absolute\path\cora-erp-masked.json
 
 ```powershell
 $env:DATABASE_URL = "postgresql://..."
-npm run db:migrate
+npm run db:migrate:runtime
 npm run data:import -- C:\absolute\path\cora-erp-masked.json --write
 ```
 
@@ -86,5 +91,5 @@ The current npm audit warnings are confined to development-only linting and migr
 
 1. Complete — foundation and safe local environment
 2. Complete — export analysis, relational model, import, and reconciliation
-3. Next — invoice list, material picker, invoice save, and aggregate view
-4. Concurrency demo, 10× dataset, measurements, documentation, and deployment
+3. Complete — invoice list, stock-aware picker, atomic invoice/receipt writes, aggregate dashboard, movement report, and live concurrency proof
+4. Next — 1×/10× measurements, diagnosis, and deployment

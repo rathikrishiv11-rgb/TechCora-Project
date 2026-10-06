@@ -57,13 +57,13 @@ One server request and one database transaction:
 7. Insert batch allocations and immutable outbound movements.
 8. Decrement batch quantities and update material/location summaries.
 9. Update rebuildable daily totals.
-10. Commit, then notify live clients of affected material versions.
+10. Commit; open editors poll only their selected material summaries and observe the incremented versions.
 
 A failure before commit changes nothing. A dropped client connection may leave a committed request, so retrying the same idempotency key returns the original result instead of selling twice.
 
 ## Dynamic event
 
-Open editors subscribe to small post-commit stock-version events. They refresh only affected material summaries. These events improve the user experience but are not the correctness mechanism. The final row-locked availability check always runs at save time, so a stale editor cannot oversell.
+Open editors refresh only their selected material summaries every five seconds. This bounded polling is deployment-safe on stateless serverless hosts and carries no batch history. It improves the user experience but is not the correctness mechanism. The final advisory lock plus row-locked availability check always runs at save time, so a stale editor cannot oversell.
 
 A 60-line receipt is also one transaction: receipt, lines, batches, inbound movements, and summary increments either all commit or all roll back.
 
@@ -96,8 +96,9 @@ Rules:
 
 Rollback is a routing change while the old system remains read-only-capable. No source export is discarded.
 
-## Known limitations after Phase 2
+## Known limitations after Phase 3
 
 - The supplied stock rows do not contain an explicit receipt-line key, so historical batch-to-receipt links and exact historical FIFO allocations cannot be proven.
 - Historical COGS cannot be reconstructed exactly without the missing consumed-batch allocation or original application logic.
-- The migrations and full import have been verified against isolated embedded PostgreSQL. Publishing the data to the deployment database still requires the production Neon `DATABASE_URL`.
+- Authentication and role authorization are outside the supplied prototype scope and must be added before real production use.
+- Polling provides eventual UI freshness; transactional locks, not the UI refresh interval, enforce stock correctness.

@@ -16,6 +16,7 @@
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:runtime": "node --experimental-strip-types scripts/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "data:analyze": "node --experimental-strip-types scripts/analyze-export.ts",
     "data:import": "node --experimental-strip-types scripts/import-export.ts",

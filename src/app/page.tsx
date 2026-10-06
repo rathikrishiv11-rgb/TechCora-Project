@@ -1,47 +1,26 @@
-const milestones = [
-  { label: "Foundation", state: "Complete", detail: "Application, database boundary, validation, and quality checks" },
-  { label: "Data model", state: "Next", detail: "Normalize the masked export and verify every source record" },
-  { label: "ERP workflows", state: "Queued", detail: "Invoices, materials, batch stock, and movement reporting" },
-  { label: "Proof", state: "Queued", detail: "Concurrency demo, 10× data, measurements, and deployment" },
-] as const;
+import Link from "next/link";
 
-export default function Home() {
-  return (
-    <main>
-      <section className="hero">
-        <div className="eyebrow"><span className="pulse" /> Phase 1 ready</div>
-        <h1>Stock that stays fast.<br />Numbers that stay honest.</h1>
-        <p className="lede">
-          StockERP is a batch-aware inventory and invoicing prototype designed to keep large reads off the browser
-          and protect stock with transactional writes.
-        </p>
-        <div className="actions">
-          <a className="primary" href="/api/health">Check system health</a>
-          <a className="secondary" href="https://github.com/rathikrishiv11-rgb/TechCora-Project">View repository</a>
-        </div>
-      </section>
+import { getDashboard } from "@/lib/erp";
 
-      <section className="status" aria-labelledby="delivery-title">
-        <div className="section-heading">
-          <div>
-            <p className="kicker">Delivery map</p>
-            <h2 id="delivery-title">Built for evidence, not theatre.</h2>
-          </div>
-          <p>The prototype will expose its data path, consistency decisions, and measured performance.</p>
-        </div>
-        <div className="milestone-grid">
-          {milestones.map((milestone, index) => (
-            <article className="milestone" key={milestone.label}>
-              <div className="milestone-top">
-                <span className="number">0{index + 1}</span>
-                <span className={`tag tag-${milestone.state.toLowerCase()}`}>{milestone.state}</span>
-              </div>
-              <h3>{milestone.label}</h3>
-              <p>{milestone.detail}</p>
-            </article>
-          ))}
-        </div>
-      </section>
-    </main>
-  );
+export const dynamic = "force-dynamic";
+
+const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+const number = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 2 });
+
+export default async function DashboardPage() {
+  const data = await getDashboard();
+  const totals = data.totals ?? {};
+  return <main className="app-main">
+    <section className="page-intro"><div><p className="kicker">Operational overview</p><h1>Good inventory decisions start here.</h1></div><Link className="button primary" href="/invoices/new">Create invoice</Link></section>
+    <section className="metric-grid" aria-label="Business totals">
+      <article><span>Revenue</span><strong>{inr.format(Number(totals.revenue ?? 0))}</strong><small>Across all imported invoices</small></article>
+      <article><span>Invoices</span><strong>{number.format(Number(totals.invoiceCount ?? 0))}</strong><small>Server-paginated records</small></article>
+      <article><span>Materials</span><strong>{number.format(Number(totals.materialCount ?? 0))}</strong><small>Active catalog items</small></article>
+      <article className="accent-metric"><span>Available stock</span><strong>{number.format(Number(totals.stockUnits ?? 0))}</strong><small>Derived from positive batches</small></article>
+    </section>
+    <section className="dashboard-grid">
+      <article className="panel"><div className="panel-heading"><div><p className="kicker">Latest activity</p><h2>Recent invoices</h2></div><Link href="/invoices">View all</Link></div><div className="table-wrap"><table><thead><tr><th>Invoice</th><th>Customer</th><th>Date</th><th className="numeric">Total</th></tr></thead><tbody>{data.recent.map((row) => <tr key={String(row.id)}><td className="mono">{String(row.invoiceNumber)}</td><td>{String(row.customerName)}</td><td>{String(row.invoiceDate)}</td><td className="numeric">{inr.format(Number(row.total))}</td></tr>)}</tbody></table></div></article>
+      <article className="panel"><div className="panel-heading"><div><p className="kicker warning">Needs attention</p><h2>At reorder point</h2></div></div><div className="attention-list">{data.lowStock.length ? data.lowStock.map((row) => <div key={String(row.id)}><span><b>{String(row.name)}</b><small>Reorder at {number.format(Number(row.reorderPoint))}</small></span><strong>{number.format(Number(row.available))}</strong></div>) : <p className="empty">No materials are below their reorder point.</p>}</div></article>
+    </section>
+  </main>;
 }
