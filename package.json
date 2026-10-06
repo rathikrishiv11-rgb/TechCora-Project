@@ -24,6 +24,8 @@
     "data:verify-db": "node --experimental-strip-types scripts/verify-database.ts",
     "data:rebuild-summaries": "node --experimental-strip-types scripts/rebuild-summaries.ts",
     "benchmark": "node --experimental-strip-types scripts/benchmark.ts",
+    "benchmark:browser": "node --experimental-strip-types scripts/measure-browser.ts",
+    "demo:dynamic": "node --experimental-strip-types scripts/demo-dynamic-event.ts",
     "check": "npm run lint && npm run typecheck && npm run test && npm run build"
   },
   "dependencies": {

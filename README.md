@@ -24,6 +24,7 @@ The implementation and evidence phases are complete:
 - Atomic FIFO invoice allocation with idempotent retries and oversell rejection
 - Atomic goods-receipt endpoint supporting 60 lines in one transaction
 - Reproducible 1×/10× benchmark and twelve-month growth projection
+- Reproducible Chrome screen traces at 4× CPU for every built screen
 - Root-cause diagnosis separating browser freeze from network/database latency
 - Deployment runbook and production security headers
 
@@ -64,6 +65,7 @@ npm run data:import -- C:\absolute\path\cora-erp-masked.json
 npm run data:reconcile -- C:\absolute\path\cora-erp-masked.json
 npm run data:verify-db -- C:\absolute\path\cora-erp-masked.json
 npm run benchmark -- C:\absolute\path\cora-erp-masked.json --output=docs/benchmarks/phase4-results.json
+npm run benchmark:browser -- --output=docs/benchmarks/browser-results.json
 ```
 
 `data:import` is a dry run unless `--write` is explicitly provided. To write after migrations have run:
@@ -96,4 +98,8 @@ The current npm audit warnings are confined to development-only linting and migr
 1. Complete — foundation and safe local environment
 2. Complete — export analysis, relational model, import, and reconciliation
 3. Complete — invoice list, stock-aware picker, atomic invoice/receipt writes, aggregate dashboard, movement report, and live concurrency proof
-4. Complete except platform handoff — 1×/10× measurements, diagnosis, deployment configuration, and production checks. Creating the hosted project requires access to the owner’s deployment account.
+4. Complete — 1×/10× database and 4×-CPU browser measurements, diagnosis, security checks, and a repeatable dynamic-event demo.
+
+## Submission
+
+The TechCora brief does not require a hosted/Vercel deployment. It requires the GitHub repository and a demo-video link emailed to `info@techcoracorp.com`. Use [`docs/DEMO_VIDEO.md`](docs/DEMO_VIDEO.md) as the recording runbook. Creating and sending the recording are the two human submission steps remaining after the repository is complete.

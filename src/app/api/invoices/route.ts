@@ -6,7 +6,7 @@ import { createInvoice, listInvoices, type InvoiceSort, type SortDirection } fro
 
 export const dynamic = "force-dynamic";
 
-const validSorts = new Set<InvoiceSort>(["invoiceDate", "invoiceNumber", "customer", "total", "status"]);
+const validSorts = new Set<InvoiceSort>(["invoiceDate", "dueDate", "invoiceNumber", "customer", "total", "balance", "status"]);
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
@@ -16,8 +16,9 @@ export async function GET(request: Request) {
   const sort = validSorts.has(requestedSort) ? requestedSort : "invoiceDate";
   const direction: SortDirection = params.get("direction") === "asc" ? "asc" : "desc";
   const query = (params.get("q") ?? "").trim().slice(0, 100);
+  const status = (params.get("status") ?? "").trim().slice(0, 40) || undefined;
 
-  return NextResponse.json(await listInvoices({ page, pageSize, query, sort, direction }));
+  return NextResponse.json(await listInvoices({ page, pageSize, query, status, sort, direction }));
 }
 
 export async function POST(request: Request) {

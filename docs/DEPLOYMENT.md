@@ -1,4 +1,6 @@
-# Deployment
+# Optional deployment
+
+The TechCora submission brief asks for a repository and demo video; it does not require Vercel or any other hosted deployment. The instructions below are optional if a hosted preview is useful later.
 
 ## Vercel + Neon
 

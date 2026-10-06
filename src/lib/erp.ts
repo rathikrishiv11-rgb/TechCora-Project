@@ -10,14 +10,16 @@ import {
   type CreateReceiptInput,
 } from "@/lib/contracts";
 
-type InvoiceSort = "invoiceDate" | "invoiceNumber" | "customer" | "total" | "status";
+type InvoiceSort = "invoiceDate" | "dueDate" | "invoiceNumber" | "customer" | "total" | "balance" | "status";
 type SortDirection = "asc" | "desc";
 
 const sortColumns: Record<InvoiceSort, string> = {
   invoiceDate: "i.invoice_date",
+  dueDate: "i.due_date",
   invoiceNumber: "i.invoice_number",
   customer: "customer_name",
   total: "i.total",
+  balance: "i.balance",
   status: "i.status",
 };
 
@@ -25,6 +27,7 @@ export async function listInvoices(input: {
   page: number;
   pageSize: number;
   query: string;
+  status?: string;
   sort: InvoiceSort;
   direction: SortDirection;
 }) {
@@ -32,25 +35,26 @@ export async function listInvoices(input: {
   const pattern = `%${input.query}%`;
   const orderColumn = sql.unsafe(sortColumns[input.sort]);
   const orderDirection = sql.unsafe(input.direction === "asc" ? "asc" : "desc");
-  const filter = input.query
-    ? sql`where i.invoice_number ilike ${pattern} or coalesce(c.name, '') ilike ${pattern} or i.status ilike ${pattern}`
-    : sql``;
+  const searchFilter = input.query
+    ? sql`(i.invoice_number ilike ${pattern} or coalesce(c.name, '') ilike ${pattern} or i.status ilike ${pattern})`
+    : sql`true`;
+  const statusFilter = input.status ? sql`i.status = ${input.status}` : sql`true`;
 
   const [rows, countRows] = await Promise.all([
     sql`
       select i.id, i.invoice_number as "invoiceNumber", i.invoice_date as "invoiceDate",
-             coalesce(c.name, i.customer_snapshot->>'name', 'Walk-in customer') as "customerName",
+             i.due_date as "dueDate", coalesce(c.name, i.customer_snapshot->>'name', 'Walk-in customer') as "customerName",
              i.status, i.total, i.balance
       from invoices i
       left join customers c on c.id = i.customer_id
-      ${filter}
+      where ${searchFilter} and ${statusFilter}
       order by ${orderColumn} ${orderDirection}, i.id desc
       limit ${input.pageSize} offset ${offset}
     `,
     sql`
       select count(*)::integer as count
       from invoices i left join customers c on c.id = i.customer_id
-      ${filter}
+      where ${searchFilter} and ${statusFilter}
     `,
   ]);
 
@@ -87,6 +91,29 @@ export async function listMaterialBatches(materialId: string) {
     order by b.received_at nulls last, b.id
     limit 100
   `;
+}
+
+export async function getEditorStock(materialIds: string[], locationId: string) {
+  if (!materialIds.length) return { summaries: [], batches: [] };
+  const [summaries, batches] = await Promise.all([
+    sql`
+      select m.id as "materialId", coalesce(s.available_quantity, 0) as "availableQuantity", coalesce(s.version, 0) as version
+      from materials m
+      left join material_stock_summary s on s.material_id = m.id and s.location_id = ${locationId}
+      where m.id in ${sql(materialIds)}
+    `,
+    sql`
+      with ranked as (
+        select b.id, b.material_id as "materialId", b.location_id as "locationId",
+               b.quantity_remaining as "quantityRemaining", b.unit_cost as "unitCost", b.received_at as "receivedAt",
+               row_number() over (partition by b.material_id order by b.received_at nulls last, b.id) as batch_rank
+        from stock_batches b
+        where b.material_id in ${sql(materialIds)} and b.location_id = ${locationId} and b.quantity_remaining > 0
+      )
+      select * from ranked where batch_rank <= 100 order by "materialId", batch_rank
+    `,
+  ]);
+  return { summaries, batches };
 }
 
 export async function searchCustomers(query: string, limit = 20) {
@@ -218,12 +245,25 @@ export async function createInvoice(input: CreateInvoiceInput) {
         throw new InsufficientStockError(materialId, request.quantity, available);
       }
 
-      let batchIndex = 0;
       for (const lineIndex of request.lines) {
         let remaining = input.lines[lineIndex].quantity;
         const lineAllocations: Array<{ batchId: string; quantity: number; unitCost: number }> = [];
+        const selectedBatchId = input.lines[lineIndex].batchId;
+        if (selectedBatchId) {
+          const selectedBatch = batches.find((batch) => String(batch.id) === selectedBatchId);
+          const selectedAvailable = Number(selectedBatch?.quantity ?? 0);
+          if (!selectedBatch || selectedAvailable + 0.000001 < remaining) {
+            throw new InsufficientStockError(materialId, remaining, selectedAvailable);
+          }
+          const unitCost = Number(selectedBatch.unitCost);
+          lineAllocations.push({ batchId: String(selectedBatch.id), quantity: remaining, unitCost });
+          selectedBatch.quantity = String(selectedAvailable - remaining);
+          costOfGoodsSold += remaining * unitCost;
+          costByMaterial.set(materialId, (costByMaterial.get(materialId) ?? 0) + remaining * unitCost);
+          remaining = 0;
+        }
         while (remaining > 0.000001) {
-          const batch = batches[batchIndex];
+          const batch = batches.find((candidate) => Number(candidate.quantity) > 0.000001);
           if (!batch) throw new InsufficientStockError(materialId, request.quantity, available);
           const inBatch = Number(batch.quantity);
           const used = Math.min(remaining, inBatch);
@@ -233,7 +273,6 @@ export async function createInvoice(input: CreateInvoiceInput) {
           remaining -= used;
           costOfGoodsSold += used * unitCost;
           costByMaterial.set(materialId, (costByMaterial.get(materialId) ?? 0) + used * unitCost);
-          if (Number(batch.quantity) <= 0.000001) batchIndex += 1;
         }
         allocations.set(lineIndex, lineAllocations);
       }
@@ -279,18 +318,21 @@ export async function createInvoice(input: CreateInvoiceInput) {
           insert into invoice_batch_allocations (invoice_line_id, batch_id, quantity, unit_cost)
           values (${lineId}, ${allocation.batchId}, ${allocation.quantity}, ${allocation.unitCost})
         `;
-        await tx`
-          insert into stock_movements
-            (id, material_id, source_material_id, batch_id, location_id, movement_type, direction,
-             quantity, unit, cost_per_unit, total_cost, related_document_type, raw_related_document_id,
-             resolved_related_document_id, relationship_confidence, notes, movement_at, created_at, source_data)
-          values
-            (${randomUUID()}, ${line.materialId}, ${line.materialId}, ${allocation.batchId}, ${input.locationId},
-             'sale', 'out', ${allocation.quantity}, ${material.unit ? String(material.unit) : null},
-             ${allocation.unitCost}, ${money(allocation.quantity * allocation.unitCost)}, 'invoice', ${input.requestId},
-             ${input.requestId}, 'exact', 'Created by StockERP invoice workflow', now(), now(), ${sourceData}::jsonb)
-        `;
       }
+      const lineAllocations = allocations.get(index) ?? [];
+      const lineCost = money(lineAllocations.reduce((sum, allocation) => sum + allocation.quantity * allocation.unitCost, 0));
+      const averageUnitCost = line.quantity > 0 ? money(lineCost / line.quantity) : 0;
+      await tx`
+        insert into stock_movements
+          (id, material_id, source_material_id, batch_id, location_id, movement_type, direction,
+           quantity, unit, cost_per_unit, total_cost, related_document_type, raw_related_document_id,
+           resolved_related_document_id, relationship_confidence, notes, movement_at, created_at, source_data)
+        values
+          (${randomUUID()}, ${line.materialId}, ${line.materialId}, ${lineAllocations.length === 1 ? lineAllocations[0].batchId : null}, ${input.locationId},
+           'sale', 'out', ${line.quantity}, ${material.unit ? String(material.unit) : null},
+           ${averageUnitCost}, ${lineCost}, 'invoice', ${input.requestId}, ${input.requestId},
+           'exact', ${lineAllocations.length > 1 ? `Created from ${lineAllocations.length} batch allocations` : 'Created by StockERP invoice workflow'}, now(), now(), ${sourceData}::jsonb)
+      `;
     }
 
     for (const [materialId, request] of combined) {

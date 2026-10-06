@@ -11,6 +11,6 @@
 | Survivable migration with loose ends | Complete as design and tooling | Dry-run importer, anomaly ledger, embedded-PostgreSQL full import, reconciliation, and live cutover/rollback plan. Cloud execution awaits deployment credentials. |
 | Full masked dataset transformation script | Complete and database verified | All source and nested-line counts reconcile after applying the generated SQL migrations; dataset remains uncommitted. |
 | Invoice list, picker, save, aggregate view | Complete | `/invoices`, `/invoices/new`, `/`, `/movements`, and their bounded API routes run against Neon. |
-| Dynamic concurrent-sale and 60-line receipt demo | Complete | Live proof on 2026-10-06: competing quantity-2 sales against quantity 3 produced one `201`, one `409`, and stock 1; receipt `phase3-receipt-60-20261006` contains exactly 60 committed lines. |
-| 1× and 10× performance measurements | Complete | `npm run benchmark`; 20 measured query iterations after warmup and real 1×/10× parse/traversal payloads. |
+| Dynamic concurrent-sale and 60-line receipt demo | Complete | Live locking proof plus `npm run demo:dynamic -- --pause`, which packages the exact 12 units/two batches, concurrent quantity-10 sale, and 60-line receipt scenario for recording. |
+| 1× and 10× performance measurements | Complete | Physical data benchmark plus real Chrome traces at 4× CPU for every built screen; scripts and JSON artifacts are checked in. |
 | README and DIAGNOSIS.md | Complete | Includes architecture, formulas, caveats, exact evidence, and deployment instructions. |

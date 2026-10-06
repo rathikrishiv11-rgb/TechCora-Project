@@ -55,6 +55,7 @@ th a { text-decoration:none; }
 .toolbar { display:flex; gap:.65rem; align-items:center; margin-bottom:1rem; }
 .toolbar label { flex:1; }
 .toolbar input { width:min(100%,620px); }
+.status-filter { width:160px; }
 input,select { min-height:44px; width:100%; padding:.68rem .78rem; border:1px solid #cbd2c8; border-radius:8px; outline:none; background:white; }
 input:focus,select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(23,107,72,.11); }
 .text-link { color:var(--green); font-weight:700; font-size:.85rem; }
@@ -81,7 +82,7 @@ label.wide { grid-column:1/-1; }
 .material-suggestions button>span { display:flex; flex-direction:column; gap:.2rem; }
 .material-suggestions button>strong { color:var(--green); font-size:.82rem; }
 .line-list { margin-top:1rem; }
-.invoice-line { display:grid; grid-template-columns:minmax(180px,1.7fr) repeat(3,minmax(90px,.65fr)) 110px 30px; gap:.7rem; align-items:end; padding:.8rem 0; border-top:1px solid #e7e9e2; }
+.invoice-line { display:grid; grid-template-columns:minmax(170px,1.4fr) minmax(180px,1.2fr) repeat(3,minmax(82px,.55fr)) 105px 30px; gap:.7rem; align-items:end; padding:.8rem 0; border-top:1px solid #e7e9e2; }
 .line-name { align-self:center; display:flex; flex-direction:column; gap:.25rem; min-width:0; }
 .line-name b { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .line-name small { color:var(--green); }

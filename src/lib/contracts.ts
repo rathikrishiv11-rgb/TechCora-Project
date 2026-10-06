@@ -11,6 +11,7 @@ export const createInvoiceSchema = z.object({
   notes: z.string().max(2000).optional(),
   lines: z.array(z.object({
     materialId: z.string().min(1),
+    batchId: z.string().min(1).optional(),
     quantity: decimalInput.positive(),
     unitPrice: decimalInput.nonnegative(),
     discount: decimalInput.nonnegative().default(0),

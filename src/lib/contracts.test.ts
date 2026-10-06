@@ -13,6 +13,16 @@ describe("ERP write contracts", () => {
     expect(parsed.success).toBe(false);
   });
 
+  it("accepts an explicit batch choice on an invoice line", () => {
+    const parsed = createInvoiceSchema.safeParse({
+      requestId: "request-123",
+      invoiceDate: "2026-10-06",
+      locationId: "warehouse-a",
+      lines: [{ materialId: "material-a", batchId: "batch-a", quantity: 2, unitPrice: 10 }],
+    });
+    expect(parsed.success).toBe(true);
+  });
+
   it("accepts one atomic 60-line receipt", () => {
     const parsed = createReceiptSchema.safeParse({
       requestId: "receipt-123",

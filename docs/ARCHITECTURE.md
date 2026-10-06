@@ -41,6 +41,9 @@ Critical stock values are updated in the same PostgreSQL transaction as their in
 | Stock levels | Summary rows paged by material/location; batch history fetched on drill-down | 1 + optional drill-down |
 | Movement report | One material and bounded date range using `(material_id,movement_at,id)` index; running balance via SQL window function | 1 |
 | Dashboard | Daily summary range plus small recent-invoice query | 2 parallel |
+| Purchase orders | Paged orders indexed by order date/vendor/status; lines fetched for one selected order | 1 + 1 detail |
+| Goods receipt | One purchase order's outstanding lines plus the same bounded material picker; one atomic receipt write | 2 reads + 1 write |
+| Profit report | Date-bounded invoices joined to invoice lines and persisted batch allocations; grouped per invoice plus one total row | 1 |
 
 No screen downloads all invoices, movements, materials, or batches.
 
@@ -66,6 +69,16 @@ A failure before commit changes nothing. A dropped client connection may leave a
 Open editors refresh only their selected material summaries every five seconds. This bounded polling is deployment-safe on stateless serverless hosts and carries no batch history. It improves the user experience but is not the correctness mechanism. The final advisory lock plus row-locked availability check always runs at save time, so a stale editor cannot oversell.
 
 A 60-line receipt is also one transaction: receipt, lines, batches, inbound movements, and summary increments either all commit or all roll back.
+
+## Screen-specific derived values
+
+- Dashboard outstanding amount comes from invoice balance/status; monthly sales come from invoices; purchases come from receipt or order totals; actual margin comes from invoice revenue minus allocation cost. Daily summaries are rebuildable accelerators, not the accounting source of truth.
+- Stock level quantity and value are maintained per material/location in `material_stock_summary` in the same transaction as batch changes. Reconciliation recomputes them from positive and zeroed batches.
+- Movement running balance is computed for one indexed material/date range with a SQL window sum. It is not stored, so it cannot drift independently from movement history.
+- Profit uses `invoice_batch_allocations`, because average material cost would give the wrong answer when batches have different landed costs.
+- Pending purchase orders are filtered by status and remaining ordered-versus-received quantity; receipt posting updates the source order line and creates stock in one write design.
+
+If a synchronous stock summary update fails, the owning sale or receipt rolls back. If an optional reporting summary rebuild fails, the previous version remains queryable and the source documents/allocations remain authoritative. Rebuild jobs compare source counts and totals before switching readers.
 
 ## Import and loose ends
 
