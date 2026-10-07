@@ -99,7 +99,3 @@ The current npm audit warnings are confined to development-only linting and migr
 2. Complete — export analysis, relational model, import, and reconciliation
 3. Complete — invoice list, stock-aware picker, atomic invoice/receipt writes, aggregate dashboard, movement report, and live concurrency proof
 4. Complete — 1×/10× database and 4×-CPU browser measurements, diagnosis, security checks, and a repeatable dynamic-event demo.
-
-## Submission
-
-The TechCora brief does not require a hosted/Vercel deployment. It requires the GitHub repository and a demo-video link emailed to `info@techcoracorp.com`. Use [`docs/DEMO_VIDEO.md`](docs/DEMO_VIDEO.md) as the recording runbook. Creating and sending the recording are the two human submission steps remaining after the repository is complete.
